@@ -31,16 +31,16 @@ This project is perfect for beginners who want to understand user authentication
 * SQLite (or dictionary for temp storage) – for user data storage
 
 📂 Project Structure
-flask-login-system/
-│── app.py              # Main Flask app
-│── templates/
-│   ├── login.html      # Login form
-│   ├── signup.html     # Signup form
-│   └── home.html       # Home/dashboard after login
-│── static/
-│   └── style.css       # (Optional) CSS styling
-│── requirements.txt    # Python dependencies
-│── README.md           # Project documentation
+flask-login-system/<br>
+│── app.py              # Main Flask app<br>
+│── templates/<br>
+│   ├── login.html      # Login form<br>
+│   ├── signup.html     # Signup form<br>
+│   └── home.html       # Home/dashboard after login<br>
+│── static/<br>
+│   └── style.css       # (Optional) CSS styling<br>
+│── requirements.txt    # Python dependencies<br>
+│── README.md           # Project documentation<br>
 
 🚀 Getting Started
 
