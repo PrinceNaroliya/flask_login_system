@@ -18,16 +18,30 @@ h1 {
     font-size: 50px;
 }
 
-.username {
-    height: 30px;
+.username,
+.password {
+    height: 20px;
     width: 300px;
     border-radius: 5px;
+    border: 1px solid #ccc;   
+    padding: 5px;
+    outline: none;           
+    transition: 0.3s;  
+    padding-left: 10px;       
 }
 
-.password {
-    height: 30px;
-    width: 300px;
-    border-radius: 5px;
+.username::placeholder,
+.password::placeholder {
+    color: black;
+    
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.username:focus,
+.password:focus {
+    border-color: antiquewhite;    
+    box-shadow: 0 0 8px antiquewhite; 
 }
 
 .btn {
@@ -65,5 +79,9 @@ h1 {
 }
 
 .error_message {
-    color: red;
+    color: rgb(249, 80, 80); 
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    margin-top: 10px;
 }

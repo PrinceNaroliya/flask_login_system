@@ -9,9 +9,9 @@
 <body>
   <div class="signbox">
     <h1>Login page</h1>
-    <form method="post" class="form">
-      <input type="text" name="username" class='username' placeholder=" Enter username.." required><br><br>
-      <input type="text" name="password" class='password' placeholder=" Enter password.." required><br>
+    <form action="{{url_for('login')}}" method="post" class="form">
+      <input type="text" name="name" class='username' placeholder=" Enter username.." required><br><br>
+      <input type="text" name="password" class='password' placeholder=" Enter password.." required>
       <br>{% if error_message %}
         <p class="error_message">{{error_message}}</p>
       {% endif %} 

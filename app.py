@@ -1,86 +1,91 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, request, session, render_template, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 import bcrypt
 
 app = Flask(__name__)
-app.secret_key = "any_random_secret_key" 
 
-@app.route('/', methods=['GET', 'POST'])
+app.secret_key = 'super_secret_key'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydb.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    sno = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+
+with app.app_context():
+    db.create_all()
+
+@app.route('/')
+def home():
+    if 'name' not in session:
+        return redirect(url_for('login'))
+    return render_template('home.html', name = session['name'])
+
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error_message = None
-
     if request.method == 'POST':
-        username = request.form.get('username')
+        name = request.form.get('name')
         password = request.form.get('password')
 
-        try:
-            with open('data.txt', 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    u, h = line.strip().split('|')
-                    if username == u:
-                        error_message = '*Username already exists*'
-                        return render_template('signup.html', error_message=error_message)
-        except FileNotFoundError:
-            pass
+        user = User.query.filter_by(name = name).first()
+        if user:
+            error_message = '*Username is already exists*'
+        else:
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        with open('data.txt', 'a') as f:
-            f.write(f"{username}|{hashed_password.decode()}\n")
+            new_user = User(
+                name=name,
+                password=hashed_password.decode('utf-8')
+            )
 
-        session['username'] = username
-        return redirect(url_for('welcome'))
+            db.session.add(new_user)
+            db.session.commit()
 
-    return render_template('signup.html', error_message=error_message)
+            session['name'] = name
+            return redirect(url_for('home')) 
 
+    return render_template('signup.html',error_message = error_message)
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/dashboard')
+def dashboard():
+    all_users = User.query.all()
+    return render_template('dashboard.html', all_users = all_users)
+
+@app.route('/delete/<sno>', methods = ['GET','POST'])
+def delete(sno):
+    user = User.query.filter_by(sno = sno).first()
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/login', methods = ['GET','POST'])
 def login():
-
     error_message = None
-
     if request.method == 'POST':
-        user_name = request.form.get('username')
-        pass_word = request.form.get('password')
+        name = request.form.get('name')
+        password = request.form.get('password')
 
-        login_success = False
-        try:
-            with open('data.txt', 'r') as file:
-                lines = file.readlines()
-                for line in lines:
-                    u, h = line.strip().split('|')
-                    if u == user_name:
-                        if bcrypt.checkpw(pass_word.encode('utf-8'), h.encode()):
-                            login_success = True
-                            session['username'] = u
-                            break
-                        else:
-                            error_message = '*password is incorrect*'
-                    else:
-                        error_message = '*username is incorrect*'
-
-                    if user_name not in line:
-                        error_message = '*username not found signup first*'
-
-            if login_success:
-                return redirect(url_for('welcome'))
-
-        except FileNotFoundError:
-            error_message =  "*No users found. Please sign up first.*"
-
+        user = User.query.filter_by(name = name).first()
+        
+        if user:  
+            if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):  
+                session['name'] = user.name
+                return redirect(url_for('home'))
+            else:
+                error_message = '*Password is Incorrect*'
+        else:
+            error_message = '*Username does not exist. Signup first*'
     return render_template('login.html', error_message = error_message)
-
-@app.route('/welcome')
-def welcome():
-    if 'username' in session:
-        return render_template('welcome.html', username=session['username'])
-    else:
-        return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
+    session.clear()
     return redirect(url_for('login'))
-
 
 if __name__ == '__main__':
     app.run(debug=True)
